@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>State PT Regulatory Portal (Mock)</title>
+    <style>
+      body { font-family: Arial, sans-serif; margin: 24px; background: #f8f3ff; color: #2d1854; }
+      h1 { color: #6b3fa0; }
+      .note { background: #f0e6ff; border-left: 4px solid #9b72cf; padding: 10px; margin: 16px 0; }
+      table { border-collapse: collapse; width: 100%; background: #fff; }
+      th, td { border: 1px solid #d8c8f0; padding: 8px; text-align: left; font-size: 14px; }
+      th { background: #e8dbf8; color: #4a2385; }
+      code { background: #f3ecff; padding: 2px 6px; border-radius: 4px; }
+    </style>
+  </head>
+  <body>
+    <h1>State PT Regulatory Portal (Mock)</h1>
+    <div class="note">This is a mock portal for RegGraph AI demo. Edit the regulation data below to trigger IRDA change detection.</div>
+    <p id="meta"></p>
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th><th>Title</th><th>Category</th><th>Value</th><th>Unit</th><th>Effective Date</th><th>State</th><th>Applies To</th><th>Description</th>
+        </tr>
+      </thead>
+      <tbody id="reg-body"></tbody>
+    </table>
+
+    <script type="application/json" id="regulations-data">
+{
+  "portal": "State Professional Tax Portals",
+  "version": "1.1.0",
+  "last_updated": "2026-05-09T00:00:00Z",
+  "regulations": [
+    {
+      "id": "PT_KA_SLAB_001",
+      "title": "Karnataka PT Monthly Slab",
+      "category": "tax_slab",
+      "value": 200,
+      "unit": "INR_MONTHLY",
+      "description": "Monthly Professional Tax deduction for employees earning above ₹25,000 in Karnataka.",
+      "effective_date": "2026-04-01",
+      "applies_to": ["PT_REGISTERED_KA"],
+      "state": "KA"
+    },
+    {
+      "id": "PT_MH_SLAB_001",
+      "title": "Maharashtra PT Monthly Slab",
+      "category": "tax_slab",
+      "value": 200,
+      "unit": "INR_MONTHLY",
+      "description": "Monthly deduction for employees in Maharashtra (₹300 in February).",
+      "effective_date": "2023-04-01",
+      "applies_to": ["PT_REGISTERED_MH"],
+      "state": "MH"
+    },
+    {
+      "id": "PT_WB_LATE_FILING_001",
+      "title": "West Bengal Late Filing Penalty",
+      "category": "penalty",
+      "value": 200,
+      "unit": "INR_PER_MONTH",
+      "description": "Penalty of ₹200 for the first month of delay in filing the PT return.",
+      "effective_date": "2026-01-01",
+      "applies_to": ["PT_REGISTERED_WB"],
+      "state": "WB"
+    },
+    {
+      "id": "PT_ANNUAL_RETURN_DUE_001",
+      "title": "Annual Consolidated PT Return",
+      "category": "due_date",
+      "value": "31_MARCH",
+      "unit": "DATE_STRING",
+      "description": "Annual return must be filed by March 31st for the preceding financial year.",
+      "effective_date": "2026-01-01",
+      "applies_to": ["PT_REGISTERED_ALL"],
+      "state": "ALL"
+    }
+  ]
+}
+    </script>
+
+    <script>
+      const data = JSON.parse(document.getElementById("regulations-data").textContent);
+      document.getElementById("meta").innerHTML =
+        "Version: <code>" + data.version + "</code> | Last Updated: <code>" + data.last_updated + "</code>";
+      const body = document.getElementById("reg-body");
+      data.regulations.forEach((reg) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML =
+          "<td>" + reg.id + "</td><td>" + reg.title + "</td><td>" + reg.category +
+          "</td><td>" + reg.value + "</td><td>" + reg.unit + "</td><td>" + reg.effective_date +
+          "</td><td>" + reg.state + "</td><td>" + reg.applies_to.join(", ") +
+          "</td><td>" + reg.description + "</td>";
+        body.appendChild(tr);
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FSSAI FoSCoS Mock Portal</title>
+    <style>
+      body { font-family: Arial, sans-serif; margin: 24px; background: #fff8f0; color: #4a2500; }
+      h1 { color: #c25700; }
+      .note { background: #fff0dc; border-left: 4px solid #e88a2d; padding: 10px; margin: 16px 0; }
+      table { border-collapse: collapse; width: 100%; background: #fff; }
+      th, td { border: 1px solid #f0d4a8; padding: 8px; text-align: left; font-size: 14px; }
+      th { background: #fde8c8; color: #7a3e00; }
+      code { background: #fff5e8; padding: 2px 6px; border-radius: 4px; }
+    </style>
+  </head>
+  <body>
+    <h1>FSSAI FoSCoS Mock Portal</h1>
+    <div class="note">This is a mock portal for RegGraph AI demo. Edit the regulation data below to trigger IRDA change detection.</div>
+    <p id="meta"></p>
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th><th>Title</th><th>Category</th><th>Value</th><th>Unit</th><th>Effective Date</th><th>State</th><th>Applies To</th><th>Description</th>
+        </tr>
+      </thead>
+      <tbody id="reg-body"></tbody>
+    </table>
+
+    <script type="application/json" id="regulations-data">
+{
+  "portal": "FSSAI FoSCoS Portal",
+  "version": "1.3.0",
+  "last_updated": "2026-05-09T00:00:00Z",
+  "regulations": [
+    {
+      "id": "FSSAI_RENEWAL_PERIOD_001",
+      "title": "FSSAI License Renewal Period",
+      "category": "renewal",
+      "value": 12,
+      "unit": "MONTHS",
+      "description": "FSSAI license must be renewed every 12 months before expiry to avoid late fees.",
+      "effective_date": "2026-01-01",
+      "applies_to": ["FOOD_BUSINESSES"],
+      "state": "ALL"
+    },
+    {
+      "id": "FSSAI_THRESHOLD_STATE_001",
+      "title": "State License Turnover Threshold",
+      "category": "threshold",
+      "value": 1200000,
+      "unit": "INR_ANNUAL",
+      "description": "Food businesses with turnover above ₹12L but below ₹20Cr need a State license instead of basic registration.",
+      "effective_date": "2011-08-05",
+      "applies_to": ["FOOD_BUSINESSES"],
+      "state": "ALL"
+    },
+    {
+      "id": "FSSAI_ANNUAL_RETURN_001",
+      "title": "FSSAI Annual Return Due Date",
+      "category": "due_date",
+      "value": "31_MAY",
+      "unit": "DATE_STRING",
+      "description": "Annual return in Form D1 is due by May 31 every year.",
+      "effective_date": "2026-01-01",
+      "applies_to": ["FOOD_BUSINESSES_STATE_LICENSE"],
+      "state": "ALL"
+    },
+    {
+      "id": "FSSAI_PENALTY_LATE_RETURN_001",
+      "title": "Penalty for Late Annual Return",
+      "category": "penalty",
+      "value": 100,
+      "unit": "INR_PER_DAY",
+      "description": "A penalty of ₹100 per day will be levied for delay in filing the Annual Return beyond May 31st.",
+      "effective_date": "2026-03-01",
+      "applies_to": ["FOOD_BUSINESSES_STATE_LICENSE"],
+      "state": "ALL"
+    }
+  ]
+}
+    </script>
+
+    <script>
+      const data = JSON.parse(document.getElementById("regulations-data").textContent);
+      document.getElementById("meta").innerHTML =
+        "Version: <code>" + data.version + "</code> | Last Updated: <code>" + data.last_updated + "</code>";
+      const body = document.getElementById("reg-body");
+      data.regulations.forEach((reg) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML =
+          "<td>" + reg.id + "</td><td>" + reg.title + "</td><td>" + reg.category +
+          "</td><td>" + reg.value + "</td><td>" + reg.unit + "</td><td>" + reg.effective_date +
+          "</td><td>" + reg.state + "</td><td>" + reg.applies_to.join(", ") +
+          "</td><td>" + reg.description + "</td>";
+        body.appendChild(tr);
+      });
+    </script>
+  </body>
+</html>

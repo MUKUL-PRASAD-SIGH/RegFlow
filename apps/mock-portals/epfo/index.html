@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EPFO Regulatory Portal (Mock)</title>
+    <style>
+      body { font-family: Arial, sans-serif; margin: 24px; background: #f3f7ff; color: #132c57; }
+      h1 { color: #1a4f9a; }
+      .note { background: #e4eeff; border-left: 4px solid #3b6fb6; padding: 10px; margin: 16px 0; }
+      table { border-collapse: collapse; width: 100%; background: #fff; }
+      th, td { border: 1px solid #c1d4f4; padding: 8px; text-align: left; font-size: 14px; }
+      th { background: #d7e6ff; color: #143f7f; }
+      code { background: #edf4ff; padding: 2px 6px; border-radius: 4px; }
+    </style>
+  </head>
+  <body>
+    <h1>EPFO Regulatory Portal (Mock)</h1>
+    <div class="note">This is a mock portal for RegGraph AI demo. Edit the regulation data below to trigger IRDA change detection.</div>
+    <p id="meta"></p>
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th><th>Title</th><th>Category</th><th>Value</th><th>Unit</th><th>Effective Date</th><th>State</th><th>Applies To</th><th>Description</th>
+        </tr>
+      </thead>
+      <tbody id="reg-body"></tbody>
+    </table>
+
+    <script type="application/json" id="regulations-data">
+{
+  "portal": "EPFO Employee Portal",
+  "version": "2.1.0",
+  "last_updated": "2026-05-09T00:00:00Z",
+  "regulations": [
+    {
+      "id": "EPF_WAGE_CEILING_001",
+      "title": "Statutory Wage Ceiling",
+      "category": "threshold",
+      "value": 15000,
+      "unit": "INR_MONTHLY",
+      "description": "Statutory wage ceiling for EPF contribution calculation.",
+      "effective_date": "2014-09-01",
+      "applies_to": ["ALL_BUSINESSES"],
+      "state": "ALL"
+    },
+    {
+      "id": "EPF_EMPLOYER_SHARE_002",
+      "title": "Employer EPF Contribution Rate",
+      "category": "tax_slab",
+      "value": 12,
+      "unit": "PERCENT",
+      "description": "Standard employer contribution to EPF/EPS.",
+      "effective_date": "1997-09-22",
+      "applies_to": ["ALL_BUSINESSES"],
+      "state": "ALL"
+    },
+    {
+      "id": "EPF_EMPLOYEE_COUNT_001",
+      "title": "EPF Registration Threshold",
+      "category": "threshold",
+      "value": 20,
+      "unit": "EMPLOYEE_COUNT",
+      "description": "Establishments with 20 or more employees must register for EPF.",
+      "effective_date": "1952-03-14",
+      "applies_to": ["ALL_BUSINESSES"],
+      "state": "ALL"
+    },
+    {
+      "id": "EPF_PENALTY_LATE_001",
+      "title": "Damages for Late Payment",
+      "category": "penalty",
+      "value": 25,
+      "unit": "PERCENT_PER_ANNUM",
+      "description": "Maximum damages levied for default in payment of EPF contributions exceeding 6 months.",
+      "effective_date": "2014-01-01",
+      "applies_to": ["PF_REGISTERED"],
+      "state": "ALL"
+    }
+  ]
+}
+    </script>
+
+    <script>
+      const data = JSON.parse(document.getElementById("regulations-data").textContent);
+      document.getElementById("meta").innerHTML =
+        "Version: <code>" + data.version + "</code> | Last Updated: <code>" + data.last_updated + "</code>";
+      const body = document.getElementById("reg-body");
+      data.regulations.forEach((reg) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML =
+          "<td>" + reg.id + "</td><td>" + reg.title + "</td><td>" + reg.category +
+          "</td><td>" + reg.value + "</td><td>" + reg.unit + "</td><td>" + reg.effective_date +
+          "</td><td>" + reg.state + "</td><td>" + reg.applies_to.join(", ") +
+          "</td><td>" + reg.description + "</td>";
+        body.appendChild(tr);
+      });
+    </script>
+  </body>
+</html>

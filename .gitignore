@@ -1,0 +1,189 @@
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Dependency directories
+node_modules/
+vendor/
+
+# Environment variables
+.env
+.env.*
+*.env
+*.env.*
+*.local
+!.env.example
+!*.env.example
+
+# Secrets and credentials
+secrets/
+secret/
+private/
+credentials/
+*.secret
+*.secrets
+*.token
+*.jwt
+*.pem
+*.key
+*.p8
+*.p12
+*.pfx
+*.crt
+*.cer
+*.csr
+*.keystore
+*.jks
+id_rsa
+id_rsa.*
+id_ed25519
+id_ed25519.*
+service-account*.json
+*-service-account.json
+credentials*.json
+google-credentials*.json
+firebase-adminsdk*.json
+clerk-secret*.json
+groq-secret*.json
+openai-secret*.json
+
+# Local deployment state
+.vercel/
+.netlify/
+.railway/
+.render/
+.fly/
+
+# Build output
+dist/
+build/
+out/
+
+# Cache
+.cache/
+*.cache
+.next/
+.turbo/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# IDE/editor folders
+.vscode/
+.idea/
+*.swp
+*.swo
+*.sublime-project
+*.sublime-workspace
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+venv/
+.venv/
+env/
+
+# Local databases and vector stores
+*.db
+*.db-*
+*.sqlite
+*.sqlite3
+*.sqlite-journal
+*.sqlite3-journal
+*.sqlite-shm
+*.sqlite3-shm
+*.sqlite-wal
+*.sqlite3-wal
+chroma_db/
+services/api/chroma_db/
+.chroma/
+
+# Private generated artifacts
+uploads/
+exports/
+reports/
+audit_packets/
+generated_reports/
+
+# Runtime pipeline artifacts (keep folder placeholders)
+data/lineage/
+data/raw/
+data/metrics/
+data/pipeline/e2e_runs/
+data/pipeline/raw/
+data/pipeline/chunks/
+data/pipeline/compliance/
+data/pipeline/reports/
+!data/pipeline/.gitkeep
+
+# Java
+*.class
+*.jar
+*.war
+*.ear
+target/
+
+# C/C++
+*.o
+*.obj
+*.exe
+*.out
+*.a
+*.lib
+
+# Rust
+target/
+Cargo.lock
+
+# Go
+bin/
+pkg/
+
+# .NET
+bin/
+obj/
+*.user
+*.suo
+
+# Mac system files
+.AppleDouble
+.LSOverride
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+
+# Coverage reports
+coverage/
+*.lcov
+
+# Lock files (optional, depends on project)
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Misc
+*.zip
+*.tar
+*.gz
+*.rar
+
+# Local pitch material
+PITCH_WALKTHROUGH.md
+
+# Internal / planning documentation (local only — do not publish)
+docs/
+MASTER_PLAN.md
+TECH_STACK.md
+ML_CONCEPTS_AND_ARCHITECTURE.md
+**/PITCH*.md

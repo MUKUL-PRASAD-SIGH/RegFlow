@@ -1,0 +1,186 @@
+x-airflow-common: &airflow-common
+  image: apache/airflow:2.8.4-python3.11
+  environment: &airflow-common-env
+    AIRFLOW__CORE__EXECUTOR: LocalExecutor
+    AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://rguser:rgpass123@postgres:5432/airflow
+    AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+    AIRFLOW__CORE__DAGS_FOLDER: /opt/airflow/dags
+    AIRFLOW__CORE__PLUGINS_FOLDER: /opt/airflow/plugins
+    _AIRFLOW_WWW_USER_USERNAME: admin
+    _AIRFLOW_WWW_USER_PASSWORD: admin
+    REDIS_URL: redis://redis:6379/0
+    # Repo root only — do NOT name a project package `airflow` (shadows the install).
+    PYTHONPATH: /opt/airflow/reggraph
+    # Install lightweight deps at container start (official image entrypoint).
+    _PIP_ADDITIONAL_REQUIREMENTS: pyyaml httpx redis
+  volumes:
+    - ./airflow_home/dags:/opt/airflow/dags
+    - ./airflow_home/plugins:/opt/airflow/plugins
+    - ./:/opt/airflow/reggraph
+    - ./data/pipeline:/opt/airflow/reggraph/data/pipeline
+    - ./chroma_db:/opt/airflow/reggraph/chroma_db
+  # Default image user (airflow). Avoid AIRFLOW_UID=0 on Windows — it breaks site-packages.
+  depends_on:
+    postgres:
+      condition: service_healthy
+    redis:
+      condition: service_started
+
+x-worker-common: &worker-common
+  build: ./services/api
+  environment:
+    - DATABASE_URL=postgresql+asyncpg://rguser:rgpass123@postgres:5432/regraph
+    - SYNC_DATABASE_URL=postgresql://rguser:rgpass123@postgres:5432/regraph
+    - REDIS_URL=redis://redis:6379
+    - GROQ_API_KEY=${GROQ_API_KEY}
+    - PYTHONPATH=/app
+  volumes:
+    - .:/app
+  working_dir: /app
+  depends_on:
+    redis:
+      condition: service_started
+    postgres:
+      condition: service_healthy
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: regraph
+      POSTGRES_USER: rguser
+      POSTGRES_PASSWORD: rgpass123
+    ports:
+      - "55432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      # Runs only on first postgres_data volume init; see docker/postgres/init-airflow-db.sql
+      - ./docker/postgres/init-airflow-db.sql:/docker-entrypoint-initdb.d/init-airflow-db.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U rguser -d regraph"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "56379:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+
+  api:
+    build: ./services/api
+    ports:
+      - "8002:8000"
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://rguser:rgpass123@postgres:5432/regraph
+      - SYNC_DATABASE_URL=postgresql://rguser:rgpass123@postgres:5432/regraph
+      - REDIS_URL=redis://redis:6379
+      - GROQ_API_KEY=${GROQ_API_KEY}
+      - PYTHONPATH=/app
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    volumes:
+      - .:/app
+    working_dir: /app/services/api
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+
+  # v1 APScheduler polling jobs — kept for backward compatibility.
+  # Airflow (airflow-scheduler) is the primary orchestrator for RegGraph AI v2.
+  scheduler:
+    build: ./services/api
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://rguser:rgpass123@postgres:5432/regraph
+      - SYNC_DATABASE_URL=postgresql://rguser:rgpass123@postgres:5432/regraph
+      - REDIS_URL=redis://redis:6379
+      - GROQ_API_KEY=${GROQ_API_KEY}
+      - PYTHONPATH=/app
+    volumes:
+      - .:/app
+    working_dir: /app/services/api
+    command: python -c "import sys; sys.path.insert(0, '/app'); from services.scheduler.polling_jobs import SchedulerJobs; from websocket.retrigger_ws import manager; from services.knowledge.obligation_graph.graph_builder import ObligationGraphBuilder; builder = ObligationGraphBuilder(); builder.build_graph(); s = SchedulerJobs(builder, manager); s.start(); import asyncio; asyncio.get_event_loop().run_forever()"
+    depends_on:
+      api:
+        condition: service_started
+
+  airflow-init:
+    <<: *airflow-common
+    entrypoint: /bin/bash
+    command:
+      - -c
+      - |
+        airflow db migrate
+        airflow users create \
+          --username "$${_AIRFLOW_WWW_USER_USERNAME}" \
+          --firstname Admin \
+          --lastname User \
+          --role Admin \
+          --email admin@example.com \
+          --password "$${_AIRFLOW_WWW_USER_PASSWORD}" || true
+    restart: "no"
+
+  airflow-webserver:
+    <<: *airflow-common
+    command: webserver
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    restart: always
+    depends_on:
+      airflow-init:
+        condition: service_completed_successfully
+
+  airflow-scheduler:
+    <<: *airflow-common
+    command: scheduler
+    healthcheck:
+      test: ["CMD-SHELL", "airflow jobs check --job-type SchedulerJob --hostname \"$${HOSTNAME}\""]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    restart: always
+    depends_on:
+      airflow-init:
+        condition: service_completed_successfully
+
+  worker-embed:
+    <<: *worker-common
+    command: python -m workers.run_worker --queue embed
+
+  worker-llm:
+    <<: *worker-common
+    command: python -m workers.run_worker --queue llm
+
+  worker-validate:
+    <<: *worker-common
+    command: python -m workers.run_worker --queue validate
+
+  grafana:
+    image: grafana/grafana:10.4.2
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_PATHS_PROVISIONING: /etc/grafana/provisioning
+    volumes:
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards
+      - grafana_data:/var/lib/grafana
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:
+  grafana_data:

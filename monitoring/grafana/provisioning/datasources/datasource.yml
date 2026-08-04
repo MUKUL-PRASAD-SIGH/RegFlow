@@ -1,0 +1,16 @@
+apiVersion: 1
+
+datasources:
+  - name: RegGraph TestData
+    type: testdata
+    access: proxy
+    isDefault: true
+    editable: true
+
+  # Uncomment when Prometheus is running (see monitoring/prometheus/prometheus.yml)
+  # - name: Prometheus
+  #   type: prometheus
+  #   access: proxy
+  #   url: http://prometheus:9090
+  #   isDefault: false
+  #   editable: true

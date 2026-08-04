@@ -1,0 +1,11 @@
+apiVersion: 1
+
+providers:
+  - name: RegGraph
+    orgId: 1
+    folder: RegGraph AI
+    type: file
+    disableDeletion: false
+    editable: true
+    options:
+      path: /var/lib/grafana/dashboards

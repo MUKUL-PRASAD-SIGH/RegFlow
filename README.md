@@ -34,26 +34,44 @@
 | FastAPI | http://localhost:8002 |
 | Next.js dashboard | unchanged (existing UX) |
 
-Five DAGs: collection → processing → embedding → compliance → reporting (Dataset-linked). Details: [`MASTER_PLAN.md`](MASTER_PLAN.md) § RegGraph AI v2 · [`docs/v2/architecture.md`](docs/v2/architecture.md) · [`docs/v2/DEPLOYMENT.md`](docs/v2/DEPLOYMENT.md) · [`docs/v2/HACKATHON_SUBMISSION_PACK.md`](docs/v2/HACKATHON_SUBMISSION_PACK.md) (video script + judge guide + screenshot list).
+### Five Dataset-linked DAGs
+
+```text
+Collection (@hourly, dynamic task mapping)
+    → Processing
+    → Embedding
+    → Compliance Intelligence
+    → Reporting
+```
+
+Datasets: `reggraph://raw_documents` → `chunks` → `embeddings` → `compliance_results`
+
+**Full design doc:** [`ARCHITECTURE.md`](ARCHITECTURE.md)  
+(pipelines, lineage, Redis workers, dual-rail agents, Compose notes, rubric map)
 
 ```bash
-docker compose up -d
-# Airflow UI http://localhost:8080 (admin/admin) · Grafana http://localhost:3000
+docker compose up -d postgres redis
+docker compose exec postgres psql -U rguser -d postgres -c "CREATE DATABASE airflow;" || true
+docker compose up -d airflow-init
+# wait for admin user, then:
+docker compose up -d airflow-webserver airflow-scheduler grafana
+
+# Airflow UI http://localhost:8080 (admin/admin)
 # Dry-run without Docker Airflow: python scripts/run_v2_pipeline.py --mock
 pytest tests/orchestration tests/workers tests/airflow tests/integration -q
 # Host ports: Postgres 55432 · Redis 56379 · API 8002 · Airflow 8080
-# If postgres volume already existed: docker compose exec postgres psql -U rguser -c "CREATE DATABASE airflow;"
-# Do NOT set AIRFLOW_UID=0 on Windows (breaks Airflow site-packages). DAGs live in airflow_home/.
+# Do NOT set AIRFLOW_UID=0 on Windows. DAGs live in airflow_home/ (not airflow/).
 ```
 
 ---
 
 
-## 🧠 What is RegGraph AI?
+## What is RegFlow?
 
-RegGraph AI is a **full-stack autonomous compliance operating system** designed for Indian SMBs. It continuously monitors live regulatory portals (GSTN, EPFO, FSSAI, State PT), detects rule changes in real-time, and automatically cascades the impact across all affected businesses — triggering obligation updates, payroll recalculations, and human-in-the-loop escalation when AI confidence is low.
+RegFlow is a **full-stack autonomous compliance operating system** for Indian SMBs. It continuously monitors live regulatory portals (GSTN, EPFO, FSSAI, State PT), detects rule changes, and cascades impact across businesses — with human-in-the-loop escalation when AI confidence is low.
 
-**The core innovation:** Every autonomous decision is verified through a **Dual-Rail Architecture** — an LLM-powered reasoning rail (Rail A) is cross-checked against a deterministic rule engine (Rail B). When they disagree, the system **automatically escalates to a human reviewer**, ensuring zero-trust AI compliance.
+**v1 story:** Dual-Rail Architecture (LLM Rail A × deterministic Rail B).  
+**v2 story:** That stack becomes **workers under Airflow** — scheduled, retried, mapped, and observable.
 
 ---
 ## 🎥 Live Demo

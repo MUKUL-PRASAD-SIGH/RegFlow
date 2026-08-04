@@ -1,0 +1,51 @@
+# Regulator source registry for orchestration DAGs and workers.
+# url_env names map to environment variables (uppercase) for runtime URL resolution.
+
+regulators:
+  - id: gstn
+    name: GST Network Portal
+    source_type: portal
+    url_env: MOCK_GSTN_URL
+    enabled: true
+
+  - id: epfo
+    name: EPFO Portal
+    source_type: portal
+    url_env: MOCK_EPFO_URL
+    enabled: true
+
+  - id: fssai
+    name: FSSAI Portal
+    source_type: portal
+    url_env: MOCK_FSSAI_URL
+    enabled: true
+
+  - id: pt
+    name: Professional Tax States Portal
+    source_type: portal
+    url_env: MOCK_PT_URL
+    enabled: true
+
+  - id: sebi
+    name: Securities and Exchange Board of India
+    source_type: rss
+    url_env: REGULATOR_SEBI_URL
+    enabled: false
+
+  - id: rbi
+    name: Reserve Bank of India
+    source_type: gazette
+    url_env: REGULATOR_RBI_URL
+    enabled: false
+
+  - id: mca
+    name: Ministry of Corporate Affairs
+    source_type: portal
+    url_env: REGULATOR_MCA_URL
+    enabled: false
+
+  - id: gst
+    name: GST Council Notifications
+    source_type: gazette
+    url_env: REGULATOR_GST_URL
+    enabled: false
